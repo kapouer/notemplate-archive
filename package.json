@@ -1,0 +1,18 @@
+{
+  "author": "Jérémy Lal <kapouer@melix.org>",
+  "name": "notemplate-archive",
+  "description": "Archive a returned view with its assets in tar.gz - middleware for express-notemplate view engine",
+  "keywords": ["template", "DOM", "tar", "archive"],
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kapouer/notemplate-archive.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express-notemplate": "~0.1.12"
+  , "tar": "~0.1.17"
+  , "superagent": "0.14.x"
+  },
+  "main": "./notemplate-archive.js"
+}

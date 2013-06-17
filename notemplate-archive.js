@@ -8,7 +8,8 @@ var http = require('http');
 module.exports = function(obj, opts) {
 	if (!opts.archive) return;
 	var sel = typeof opts.archive == "string" ? opts.archive : 'link,script,img';
-	var basehref = obj.view.window.location.href;
+	var win = obj.view.window;
+	var basehref = win.location.href;
 	var root = opts.root || Path.basename(basehref, Path.extname(basehref));
 	//console.log(opts.settings.caches);
 	var tarStream = tar.Pack({ noProprietary: true });
@@ -17,10 +18,9 @@ module.exports = function(obj, opts) {
 	sourceStream.path = root;
 	sourceStream.pipe(tarStream, {end: false});
 	
-	var html = obj.output; // TODO regenerate output from DOM
 	obj.output = tarStream;
 
-	var items = obj.view.window.$(sel).toArray();
+	var items = win.$(sel).toArray();
 	var dirs = {};
 	
 	(function processItem() {
@@ -30,7 +30,7 @@ module.exports = function(obj, opts) {
 	})();
 
 	function finish() {
-		tarStream.add(CreateEntry(html, "index.html", root));
+		tarStream.add(CreateEntry(win.document.outerHTML, "index.html", root));
 		tarStream.end();
 	}
 };

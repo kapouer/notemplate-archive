@@ -34,12 +34,11 @@ Usage
 Parameters
 ----------
 
-* archive
-	Boolean or String
-	If false, notemplate-archive just returns.
-	If true, defaults to "link, script, img".
-
-* root
-	Root directory for the archive.
-	String. Defaults to current page basename.
+* archive  
+  Boolean or String  
+  If false, notemplate-archive just returns.  
+  If true, defaults to "link, script, img".
+* root  
+  Root directory for the archive.  
+  String. Defaults to current page basename.  
 

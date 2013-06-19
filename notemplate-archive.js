@@ -22,11 +22,12 @@ module.exports = function(view, opts) {
 
 	var items = win.$(sel).toArray();
 	var dirs = {};
+	var mangler = opts.mangler || defaultMangler;
 	
 	(function processItem() {
 		var item = items.shift();
 		if (!item) return finish();
-		archive(item, root, tarStream, processItem);
+		archive(item, mangler, root, tarStream, processItem);
 	})();
 
 	function finish() {
@@ -35,8 +36,14 @@ module.exports = function(view, opts) {
 	}
 };
 
+function defaultMangler(uri) {
+	var pathname = URL.parse(uri).pathname;
+	if (pathname && pathname[0] == '/') pathname = pathname.substring(1);
+	return pathname;
+}
 
-function archive(elem, root, tarStream, done) {
+
+function archive(elem, mangler, root, tarStream, done) {
 	var src = elem.getAttribute('src');
 	var href = elem.getAttribute('href');
 	var uri = src || href; // jsdom has window.location, so it should build the absolute url
@@ -44,8 +51,7 @@ function archive(elem, root, tarStream, done) {
 	uri = elem._ownerDocument.parentWindow.resourceLoader.resolve(elem._ownerDocument, uri);
 	// the file must be recorded in a local directory
 	
-	var pathname = URL.parse(uri).pathname;
-	if (pathname && pathname[0] == '/') pathname = pathname.substring(1);
+	var pathname = mangler(uri);
 	if (src) elem.setAttribute('src', pathname);
 	else if (href) elem.setAttribute('href', pathname);
 
@@ -76,6 +82,9 @@ function archive(elem, root, tarStream, done) {
 			tarStream.resume();
 			done();
 		});
+	}).on('error', function(err) {
+		console.error(err);
+		done(err);
 	});
 }
 

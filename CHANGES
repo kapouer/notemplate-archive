@@ -1,3 +1,9 @@
+Version 0.0.2
+=============
+
+* options.mangler can replace the default mangler which replaces uri by
+  its pathname (without leading slash).
+
 Version 0.0.1
 =============
 

@@ -42,5 +42,8 @@ Parameters
   If true, defaults to "link, script, img".
 * root  
   Root directory for the archive.  
-  String. Defaults to current page basename.  
+  String. Defaults to current page basename.
+* mangler
+  function(uri) return String  
+	Replace the default uri mangler.
 

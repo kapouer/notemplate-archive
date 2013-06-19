@@ -10,7 +10,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "express-notemplate": "~0.1.12"
+    "express-notemplate": "~0.1.13"
   , "tar": "~0.1.17"
   , "superagent": "0.14.x"
   },

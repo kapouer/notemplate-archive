@@ -44,6 +44,7 @@ Parameters
   Root directory for the archive.  
   String. Defaults to current page basename.
 * mangler
-  function(uri) return String  
+  function(uri) return String.
+	if returned value evaluates to false, defaultMangler is called instead.  
 	Replace the default uri mangler.
 

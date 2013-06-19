@@ -52,6 +52,8 @@ function archive(elem, mangler, root, tarStream, done) {
 	// the file must be recorded in a local directory
 	
 	var pathname = mangler(uri);
+	if (!pathname && mangler != defaultMangler) pathname = defaultMangler(uri);
+	
 	if (src) elem.setAttribute('src', pathname);
 	else if (href) elem.setAttribute('href', pathname);
 

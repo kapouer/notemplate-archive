@@ -1,3 +1,8 @@
+Version 0.0.3
+=============
+
+* Use default mangler if options.mangler returns falsey value.
+
 Version 0.0.2
 =============
 

@@ -18,7 +18,9 @@ Express 3 Setup
 
 	var notemplate = require('express-notemplate');
 	// ...
-	notemplate.on('output', require('notemplate-archive'));
+	notemplate.on('render', require('notemplate-archive'));
+
+This will set view.instance.output to a tar stream.
 
 
 Usage

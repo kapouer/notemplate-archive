@@ -5,10 +5,10 @@ var URL = require('url');
 var Path = require('path');
 var http = require('http');
 
-module.exports = function(obj, opts) {
+module.exports = function(view, opts) {
 	if (!opts.archive) return;
 	var sel = typeof opts.archive == "string" ? opts.archive : 'link,script,img';
-	var win = obj.view.window;
+	var win = view.instance.window;
 	var basehref = win.location.href;
 	var root = opts.root || Path.basename(basehref, Path.extname(basehref));
 	//console.log(opts.settings.caches);
@@ -18,7 +18,7 @@ module.exports = function(obj, opts) {
 	sourceStream.path = root;
 	sourceStream.pipe(tarStream, {end: false});
 	
-	obj.output = tarStream;
+	view.instance.output = tarStream;
 
 	var items = win.$(sel).toArray();
 	var dirs = {};
@@ -30,20 +30,10 @@ module.exports = function(obj, opts) {
 	})();
 
 	function finish() {
-		tarStream.add(CreateEntry(win.document.outerHTML, "index.html", root));
+		tarStream.add(CreateEntry(view.instance.toString(), "index.html", root));
 		tarStream.end();
 	}
 };
-
-// function finish(html, os) {
-	// return;
-	// var is = new stream.Readable();
-	// is.path = "index.html";
-	// is.props = {type: "File"};
-	// is.pipe(os);
-	// is.push(html, 'utf8');
-	// is.push(null);
-// }
 
 
 function archive(elem, root, tarStream, done) {

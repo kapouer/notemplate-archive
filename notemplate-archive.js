@@ -21,7 +21,7 @@ module.exports = function(view, opts) {
 
 	var items = win.$(sel).toArray();
 	var dirs = {};
-	var mangler = opts.mangler || defaultMangler;
+	var mangler = opts.mangler || defaultUriMangler;
 	
 	(function processItem() {
 		var item = items.shift();
@@ -35,10 +35,11 @@ module.exports = function(view, opts) {
 	}
 };
 
-function defaultMangler(uri) {
+function defaultUriMangler(uri, data, cb) {
 	var pathname = URL.parse(uri).pathname;
 	if (pathname && pathname[0] == '/') pathname = pathname.substring(1);
-	return pathname;
+	if (cb) cb(pathname); // return {path: pathname}; is equivalent
+	else return pathname;
 }
 
 
@@ -48,13 +49,6 @@ function archive(elem, mangler, root, tarStream, done) {
 	var uri = src || href; // jsdom has window.location, so it should build the absolute url
 	if (!uri) return;
 	uri = elem._ownerDocument.parentWindow.resourceLoader.resolve(elem._ownerDocument, uri);
-	// the file must be recorded in a local directory
-	
-	var pathname = mangler(uri);
-	if (!pathname && mangler != defaultMangler) pathname = defaultMangler(uri);
-	
-	if (src) elem.setAttribute('src', pathname);
-	else if (href) elem.setAttribute('href', pathname);
 
 	tarStream.pause();
 	http.get(uri, function(res) {
@@ -79,9 +73,21 @@ function archive(elem, mangler, root, tarStream, done) {
 					buf = chunks.join('');
 				}
 			}
-			tarStream.add(CreateEntry(buf, pathname, root));
-			tarStream.resume();
-			done();
+			mangler(uri, buf, function(mangled) {
+				if (!Array.isArray(mangled)) mangled = [mangled];
+				mangled.forEach(function(val, i) {
+					if (!val || typeof val == "string") val = {path: val};
+					if (i == 0) {
+						if (!val.path && mangler != defaultUriMangler) val.path = defaultUriMangler(uri);
+						if (src) elem.setAttribute('src', val.path);
+						else if (href) elem.setAttribute('href', val.path);
+						if (!val.data) val.data = buf;
+					}
+					if (val.path != null && val.data != null) tarStream.add(CreateEntry(val.data, val.path, root));
+				});
+				tarStream.resume();
+				done();
+			});
 		});
 	}).on('error', function(err) {
 		console.error(err);

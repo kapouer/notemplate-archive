@@ -11,7 +11,6 @@ module.exports = function(view, opts) {
 	var win = view.instance.window;
 	var basehref = win.location.href;
 	var root = opts.root || Path.basename(basehref, Path.extname(basehref));
-	//console.log(opts.settings.caches);
 	var tarStream = tar.Pack({ noProprietary: true });
 	var sourceStream = new stream.PassThrough();
 	sourceStream.props = {type: 'Directory'};

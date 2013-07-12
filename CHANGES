@@ -1,3 +1,11 @@
+Version 0.0.4
+=============
+
+* mangler(href, data, cb) where cb(result)
+  and result can be falsey, string, object with path and/or data keys,
+  array of such objects (the first object being the one given to mangler).
+  When an array, each new path, data pair creates a new tar file entry.
+
 Version 0.0.3
 =============
 

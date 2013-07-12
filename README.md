@@ -44,7 +44,13 @@ Parameters
   Root directory for the archive.  
   String. Defaults to current page basename.
 * mangler
-  function(uri) return String.
-	if returned value evaluates to false, defaultMangler is called instead.  
-	Replace the default uri mangler.
+	function(uri, data) return falsey or string or object or array
+	Allows one to change path and data of each new tar file,
+	and to add files to tar stream by returning an array of
+	{path:p, data:d} objects.
+	If return value is falsey it becomes {path: uri.pathname}
+	If return value is an object its path and data values can replace
+	the original ones.
+	If return value is an array, entries with index >= 1 will add new
+	files to tar stream.
 

@@ -1,3 +1,10 @@
+Version 0.0.5
+=============
+
+* returned mangled objects can have a new property : "href", which is used
+  to change the DOM attribute only, not the path. Used in automated
+  deployments of tarballs.
+
 Version 0.0.4
 =============
 

@@ -79,8 +79,8 @@ function archive(elem, mangler, root, tarStream, done) {
 					if (!val || typeof val == "string") val = {path: val};
 					if (i == 0) {
 						if (!val.path && mangler != defaultUriMangler) val.path = defaultUriMangler(uri);
-						if (src) elem.setAttribute('src', val.path);
-						else if (href) elem.setAttribute('href', val.path);
+						if (src) elem.setAttribute('src', val.href || val.path);
+						else if (href) elem.setAttribute('href', val.href || val.path);
 						if (!val.data) val.data = buf;
 					}
 					if (val.path != null && val.data != null) tarStream.add(CreateEntry(val.data, val.path, root));

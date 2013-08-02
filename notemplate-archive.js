@@ -48,7 +48,7 @@ function archive(elem, match, mangler, root, tarStream, done) {
 	var src = elem.getAttribute('src');
 	var href = elem.getAttribute('href');
 	var uri = src || href; // jsdom has window.location, so it should build the absolute url
-	if (!uri || !match.test(uri)) return;
+	if (!uri || !match.test(uri)) return done();
 	uri = elem._ownerDocument.parentWindow.resourceLoader.resolve(elem._ownerDocument, uri);
 
 	tarStream.pause();

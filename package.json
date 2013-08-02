@@ -3,7 +3,7 @@
   "name": "notemplate-archive",
   "description": "Archive a returned view with its assets in tar.gz - middleware for express-notemplate view engine",
   "keywords": ["template", "DOM", "tar", "archive"],
-  "version": "0.0.6",
+  "version": "0.0.7",
   "repository": {
     "type": "git",
     "url": "git://github.com/kapouer/notemplate-archive.git"

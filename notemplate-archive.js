@@ -11,6 +11,7 @@ module.exports = function(view, opts) {
 	var win = view.instance.window;
 	var basehref = win.location.href;
 	var root = opts.root || Path.basename(basehref, Path.extname(basehref));
+	var match = opts.match || /.*/;
 	var tarStream = tar.Pack({ noProprietary: true });
 	var sourceStream = new stream.PassThrough();
 	sourceStream.props = {type: 'Directory'};
@@ -26,7 +27,7 @@ module.exports = function(view, opts) {
 	(function processItem() {
 		var item = items.shift();
 		if (!item) return finish();
-		archive(item, mangler, root, tarStream, processItem);
+		archive(item, match, mangler, root, tarStream, processItem);
 	})();
 
 	function finish() {
@@ -43,11 +44,11 @@ function defaultUriMangler(uri, data, cb) {
 }
 
 
-function archive(elem, mangler, root, tarStream, done) {
+function archive(elem, match, mangler, root, tarStream, done) {
 	var src = elem.getAttribute('src');
 	var href = elem.getAttribute('href');
 	var uri = src || href; // jsdom has window.location, so it should build the absolute url
-	if (!uri) return;
+	if (!uri || !match.test(uri)) return;
 	uri = elem._ownerDocument.parentWindow.resourceLoader.resolve(elem._ownerDocument, uri);
 
 	tarStream.pause();

@@ -53,4 +53,7 @@ Parameters
 	the original ones.
 	If return value is an array, entries with index >= 1 will add new
 	files to tar stream.
-
+* match
+  RegExp, defaults to /.*/
+	Only matching url are processed, others are left untouched and not
+	included in the archive.

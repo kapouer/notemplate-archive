@@ -1,3 +1,9 @@
+Version 0.0.6
+=============
+
+* add option match (defaults to /.*/) to let us specify which files must
+  be processed (downloaded and mangled).
+
 Version 0.0.5
 =============
 

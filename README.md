@@ -44,15 +44,17 @@ Parameters
   Root directory for the archive.  
   String. Defaults to current page basename.
 * mangler
-	function(uri, data) return falsey or string or object or array
+	function(uri, cb) return falsey or string or object or array
+	cb.request is a facility for downloading buffered data.
 	Allows one to change path and data of each new tar file,
 	and to add files to tar stream by returning an array of
-	{path:p, data:d} objects.
-	If return value is falsey it becomes {path: uri.pathname}
-	If return value is an object its path and data values can replace
-	the original ones.
-	If return value is an array, entries with index >= 1 will add new
-	files to tar stream.
+	{uri:uri} objects. Those objects can optionally have:
+	- path : the path of the file in the tarball, defaults to uri.pathname
+	  without leading slash,
+	- href : the href set on the node attribute, defaults to path,
+	- data : the data is fetched using the uri if data has no value.
+	If return value is an object or an array, it will add each entry
+	in the tarball.
 * match
   RegExp, defaults to /.*/
 	Only matching url are processed, others are left untouched and not

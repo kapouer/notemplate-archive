@@ -1,3 +1,13 @@
+Version 0.1.0
+=============
+
+* mangler option rewritten. Data is fetched *after* mangler is called.
+  The callback given to mangler(uri, cb) has cb.request that buffers
+  data.
+  Properties of returned mangled object are now uri, path, href, data.
+  uri is the where to fetch the data (optional if data is present),
+  href is what attribute to set the dom node to.
+
 Version 0.0.7
 =============
 

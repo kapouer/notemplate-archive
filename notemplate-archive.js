@@ -24,7 +24,8 @@ module.exports = function(view, opts) {
 	var dirs = {};
 	var mangler = opts.mangler || defaultUriMangler;
 	
-	(function processItem() {
+	(function processItem(err) {
+		if (err) console.error(err);
 		var item = items.shift();
 		if (!item) return finish();
 		archive(item, match, mangler, root, tarStream, processItem);
@@ -36,24 +37,19 @@ module.exports = function(view, opts) {
 	}
 };
 
-function defaultUriMangler(uri, data, cb) {
-	var pathname = URL.parse(uri).pathname;
-	if (pathname && pathname[0] == '/') pathname = pathname.substring(1);
-	if (cb) cb(pathname); // return {path: pathname}; is equivalent
-	else return pathname;
+function defaultUriMangler(uri, cb) {
+	cb(null, uri);
 }
 
+function getPathname(uri) {
+	var pathname = URL.parse(uri).pathname;
+	if (pathname && pathname[0] == '/') pathname = pathname.substring(1);
+	return pathname;
+}
 
-function archive(elem, match, mangler, root, tarStream, done) {
-	var src = elem.getAttribute('src');
-	var href = elem.getAttribute('href');
-	var uri = src || href; // jsdom has window.location, so it should build the absolute url
-	if (!uri || !match.test(uri)) return done();
-	uri = elem._ownerDocument.parentWindow.resourceLoader.resolve(elem._ownerDocument, uri);
-
-	tarStream.pause();
+function request(uri, cb) {
 	http.get(uri, function(res) {
-		if (res.statusCode < 200 || res.statusCode > 400) return done(res.statusCode);
+		if (res.statusCode < 200 || res.statusCode > 400) return cb(res.statusCode);
 		var chunks = [];
     var bufLen = 0;
     res.on('data', function(chunk) {
@@ -74,26 +70,56 @@ function archive(elem, match, mangler, root, tarStream, done) {
 					buf = chunks.join('');
 				}
 			}
-			mangler(uri, buf, function(mangled) {
-				if (!Array.isArray(mangled)) mangled = [mangled];
-				mangled.forEach(function(val, i) {
-					if (!val || typeof val == "string") val = {path: val};
-					if (i == 0) {
-						if (!val.path && mangler != defaultUriMangler) val.path = defaultUriMangler(uri);
-						if (src) elem.setAttribute('src', val.href || val.path);
-						else if (href) elem.setAttribute('href', val.href || val.path);
-						if (!val.data) val.data = buf;
-					}
-					if (val.path != null && val.data != null) tarStream.add(CreateEntry(val.data, val.path, root));
-				});
-				tarStream.resume();
-				done();
-			});
+			cb(null, buf);
 		});
 	}).on('error', function(err) {
 		console.error(err);
-		done(err);
+		cb(err);
 	});
+}
+
+function ensureData(obj, cb) {
+	if (obj.data) return cb(null, obj);
+	if (!obj.uri) return cb("missing uri", obj);
+	request(obj.uri, function(err, buf) {
+		if (buf) obj.data = buf;
+		cb(err, obj);
+	});
+}
+
+
+function archive(elem, match, mangler, root, tarStream, done) {
+	var src = elem.getAttribute('src');
+	var href = elem.getAttribute('href');
+	var uri = src || href; // jsdom has window.location, so it should build the absolute url
+	if (!uri || !match.test(uri)) return done();
+	uri = elem._ownerDocument.parentWindow.resourceLoader.resolve(elem._ownerDocument, uri);
+
+	tarStream.pause();
+	function finish(err) {
+		tarStream.resume();
+		done(err);
+	}
+	function mcb(err, mangled) {
+		if (err) return finish(err);
+		if (!Array.isArray(mangled)) mangled = [mangled];
+		var count = mangled.length;
+		mangled.forEach(function(val, i) {
+			if (!val || typeof val == "string") val = {uri: val};
+			if (val.uri && !val.path) val.path = getPathname(val.uri);
+			if (i == 0) {
+				if (!val.href) val.href = val.path;
+				if (src) elem.setAttribute('src', val.href);
+				else if (href) elem.setAttribute('href', val.href);
+			}
+			ensureData(val, function(err, obj) {
+				if (val.path != null && val.data != null) tarStream.add(CreateEntry(val.data, val.path, root));
+				if (--count == 0) finish(err);
+			});
+		});
+	}
+	mcb.request = request;
+	mangler(uri, mcb);
 }
 
 

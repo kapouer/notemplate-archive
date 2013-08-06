@@ -1,3 +1,9 @@
+Version 0.1.2
+=============
+
+* fix finish() called too soon when removing a DOM node
+* small style fixes.
+
 Version 0.1.1
 =============
 

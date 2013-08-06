@@ -82,7 +82,7 @@ function ensureData(obj, cb) {
 	if (obj.data) return cb(null, obj);
 	if (!obj.uri) return cb(null, obj);
 	request(obj.uri, function(err, buf) {
-		if (buf) obj.data = buf;
+		if (!err && buf) obj.data = buf;
 		cb(err, obj);
 	});
 }
@@ -110,14 +110,14 @@ function archive(elem, match, mangler, root, tarStream, done) {
 			if (i == 0) {
 				if (!val.uri && !val.href && !val.path) {
 					elem.parentNode.removeChild(elem);
-					if (--count == 0) return finish(err);
+				} else {
+					if (!val.href) val.href = val.path;
+					if (src) elem.setAttribute('src', val.href);
+					else if (href) elem.setAttribute('href', val.href);
 				}
-				if (!val.href) val.href = val.path;
-				if (src) elem.setAttribute('src', val.href);
-				else if (href) elem.setAttribute('href', val.href);
 			}
 			ensureData(val, function(err, obj) {
-				if (val.path != null && val.data != null) tarStream.add(CreateEntry(val.data, val.path, root));
+				if (obj.path != null && obj.data != null) tarStream.add(CreateEntry(obj.data, obj.path, root));
 				if (--count == 0) finish(err);
 			});
 		});

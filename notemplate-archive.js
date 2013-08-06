@@ -80,7 +80,7 @@ function request(uri, cb) {
 
 function ensureData(obj, cb) {
 	if (obj.data) return cb(null, obj);
-	if (!obj.uri) return cb("missing uri", obj);
+	if (!obj.uri) return cb(null, obj);
 	request(obj.uri, function(err, buf) {
 		if (buf) obj.data = buf;
 		cb(err, obj);
@@ -108,6 +108,10 @@ function archive(elem, match, mangler, root, tarStream, done) {
 			if (!val || typeof val == "string") val = {uri: val};
 			if (val.uri && !val.path) val.path = getPathname(val.uri);
 			if (i == 0) {
+				if (!val.uri && !val.href && !val.path) {
+					elem.parentNode.removeChild(elem);
+					if (--count == 0) return finish(err);
+				}
 				if (!val.href) val.href = val.path;
 				if (src) elem.setAttribute('src', val.href);
 				else if (href) elem.setAttribute('href', val.href);

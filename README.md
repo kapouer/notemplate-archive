@@ -55,6 +55,9 @@ Parameters
 	- data : the data is fetched using the uri if data has no value.
 	If return value is an object or an array, it will add each entry
 	in the tarball.
+	The first object of that array is bound to the actual DOM node.
+	If this first object is null or its uri, path, and href are falsey,
+	the DOM node is removed.
 * match
   RegExp, defaults to /.*/
 	Only matching url are processed, others are left untouched and not

@@ -1,3 +1,10 @@
+Version 0.1.1
+=============
+
+* if uri, href, path are empty on first returned object,
+  or if the object is null, remove the DOM node.
+* allow returning empty uri - data won't be fetched.
+
 Version 0.1.0
 =============
 

@@ -13,10 +13,6 @@ module.exports = function(view, opts) {
 	var root = opts.root || Path.basename(basehref, Path.extname(basehref));
 	var match = opts.match || /.*/;
 	var tarStream = tar.Pack({ noProprietary: true });
-	var sourceStream = new stream.PassThrough();
-	sourceStream.props = {type: 'Directory'};
-	sourceStream.path = root;
-	sourceStream.pipe(tarStream, {end: false});
 	
 	view.instance.output = tarStream;
 

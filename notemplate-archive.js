@@ -104,7 +104,7 @@ function archive(elem, match, mangler, root, tarStream, done) {
 		if (err) return finish(err);
 		if (!Array.isArray(mangled)) mangled = [mangled];
 		var count = mangled.length;
-		mangled.forEach(function(val, i) {
+		if (count > 0) mangled.forEach(function(val, i) {
 			if (!val || typeof val == "string") val = {uri: val};
 			if (val.uri && !val.path) val.path = getPathname(val.uri);
 			if (i == 0) {
@@ -120,7 +120,7 @@ function archive(elem, match, mangler, root, tarStream, done) {
 				if (obj.path != null && obj.data != null) tarStream.add(CreateEntry(obj.data, obj.path, root));
 				if (--count == 0) finish(err);
 			});
-		});
+		}); else finish();
 	}
 	mcb.request = request;
 	mangler(uri, mcb);
@@ -128,6 +128,10 @@ function archive(elem, match, mangler, root, tarStream, done) {
 
 
 function CreateEntry(data, path, root) {
+	if (typeof data == "string") {
+		// tar only understands buffer.length
+		data = new Buffer(data);
+	}
 	var entry = new stream.Readable();
 	var allpushed = false;
 	entry._read = function(s) {

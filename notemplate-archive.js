@@ -5,32 +5,79 @@ var URL = require('url');
 var Path = require('path');
 var http = require('http');
 
-module.exports = function(view, opts) {
-	if (!opts.archive) return;
-	var sel = typeof opts.archive == "string" ? opts.archive : 'link,script,img';
-	var win = view.instance.window;
-	var basehref = win.location.href;
-	var root = opts.root || Path.basename(basehref, Path.extname(basehref));
-	var match = opts.match || /.*/;
-	var tarStream = tar.Pack({ noProprietary: true });
-	
-	view.instance.output = tarStream;
+module.exports = function(notemplate) {
+	notemplate.on('ready', function(view, opts) {
+		view.archiveCache = {};
+	});
+	notemplate.on('request', function(view, method, url, status, response) {
+		// cache request and response to be able to quickly tar a file
+		if (method != "GET") return;
+		view.archiveCache[url] = {status: status, response: response};
+	});
+	notemplate.on('render', function(view, opts) {
+		if (!opts.archive) return;
+		var sel = (typeof opts.archive == "string" ? opts.archive : 'link,script,img,xhr')
+			.split(',').map(Function.prototype.call, String.prototype.trim);
+		var xhr = sel.indexOf('xhr');
+		if (xhr >= 0) {
+			sel.splice(xhr, 1);
+			sel = sel.join(',');
+			xhr = true;
+		}
 
-	var items = win.$(sel).toArray();
-	var dirs = {};
-	var mangler = opts.mangler || defaultUriMangler;
-	
-	(function processItem(err) {
-		if (err) console.error(err);
-		var item = items.shift();
-		if (!item) return finish();
-		archive(item, match, mangler, root, tarStream, processItem);
-	})();
+		var win = view.instance.window;
+		var basehref = win.location.href;
+		var root = opts.root || Path.basename(basehref, Path.extname(basehref));
+		var match = opts.match || /.*/;
+		var tarStream = tar.Pack({ noProprietary: true });
 
-	function finish() {
-		tarStream.add(CreateEntry(view.instance.toString(), "index.html", root));
-		tarStream.end();
-	}
+		view.instance.output = tarStream;
+
+		var items = win.$(sel).toArray();
+		if (xhr) {
+			for (var url in view.archiveCache) {
+				var link = win.document.createElement('link');
+				link.attr('href', url);
+				items.push(link);
+			}
+		}
+		var dirs = {};
+		var mangler = opts.mangler || defaultUriMangler;
+		mangler.request = function(uri, cb) {
+			var cached = view.archiveCache[uri];
+			if (cached) {
+				if (cached.status < 200 || cached.status >= 300) {
+					cb(cached.status);
+				} else {
+					cb(null, {uri:uri, data:cached.response});
+				}
+			}	else {
+				request(uri, function(err, data) {
+					if (!err) {
+						view.archiveCache[uri] = {status: 200, response: data};
+					} else {
+						var status = parseInt(err);
+						if (isNaN(status)) status = 404;
+						view.archiveCache[uri] = {status: status, response: data};
+					}
+					cb(err, data);
+				});
+			}
+		};
+
+		(function processItem(err) {
+			if (err) console.error(err);
+			var item = items.shift();
+			if (!item) return finish();
+			archive(item, match, mangler, root, tarStream, processItem);
+		})();
+
+		function finish() {
+			tarStream.add(CreateEntry(view.instance.toString(), "index.html", root));
+			tarStream.end();
+			view.archiveCache = null;
+		}
+	});
 };
 
 function defaultUriMangler(uri, cb) {
@@ -74,10 +121,10 @@ function request(uri, cb) {
 	});
 }
 
-function ensureData(obj, cb) {
+function ensureData(obj, requester, cb) {
 	if (obj.data) return cb(null, obj);
 	if (!obj.uri) return cb(null, obj);
-	request(obj.uri, function(err, buf) {
+	requester(obj.uri, function(err, buf) {
 		if (!err && buf) obj.data = buf;
 		cb(err, obj);
 	});
@@ -105,20 +152,20 @@ function archive(elem, match, mangler, root, tarStream, done) {
 			if (val.uri && !val.path) val.path = getPathname(val.uri);
 			if (i == 0) {
 				if (!val.uri && !val.href && !val.path) {
-					elem.parentNode.removeChild(elem);
+					if (elem.parentNode) elem.parentNode.removeChild(elem);
 				} else {
 					if (!val.href) val.href = val.path;
 					if (src) elem.setAttribute('src', val.href);
 					else if (href) elem.setAttribute('href', val.href);
 				}
 			}
-			ensureData(val, function(err, obj) {
+			ensureData(val, mangler.request, function(err, obj) {
 				if (obj.path != null && obj.data != null) tarStream.add(CreateEntry(obj.data, obj.path, root));
 				if (--count == 0) finish(err);
 			});
 		}); else finish();
 	}
-	mcb.request = request;
+	mcb.request = mangler.request;
 	mangler(uri, mcb);
 }
 

@@ -1,3 +1,9 @@
+Version 0.2.0
+=============
+
+* add xhr resources to the tarball
+* setup using require('notemplate-archive')(notemplate);
+
 Version 0.1.3
 =============
 

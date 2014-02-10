@@ -3,8 +3,11 @@ notemplate-archive
 
 Middleware for express-notemplate.
 
-Archive an html page rendered by notemplate, along with its js, css, and
-other configurable assets, in a tarball stream.
+Archive an html page rendered by notemplate, along with its js, css,
+fonts, images, and xhr-requested resources, in a tarball stream.
+XHR resources are only downloaded once.
+A simple plugin mecanism allows one to control how resources are added
+to the tarball.
 The resulting html page can be loaded locally.
 
 Why ?
@@ -18,7 +21,7 @@ Express 3 Setup
 
 	var notemplate = require('express-notemplate');
 	// ...
-	notemplate.on('render', require('notemplate-archive'));
+	require('notemplate-archive')(notemplate);
 
 This will set view.instance.output to a tar stream.
 
@@ -36,12 +39,12 @@ Usage
 Parameters
 ----------
 
-* archive  
-  Boolean or String  
-  If false, notemplate-archive just returns.  
-  If true, defaults to "link, script, img".
-* root  
-  Root directory for the archive.  
+* archive
+  Boolean or String
+  If false, notemplate-archive just returns.
+  If true, defaults to "link, script, img, xhr".
+* root
+  Root directory for the archive.
   String. Defaults to current page basename.
 * mangler
 	function(uri, cb) return falsey or string or object or array

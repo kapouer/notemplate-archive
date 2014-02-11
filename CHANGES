@@ -3,6 +3,8 @@ Version 0.2.0
 
 * add xhr resources to the tarball
 * setup using require('notemplate-archive')(notemplate);
+* breaking change: use window.location.pathname to determine the name
+  of the html file and default root path.
 
 Version 0.1.3
 =============

@@ -29,6 +29,8 @@ This will set view.instance.output to a tar stream.
 Usage
 -----
 
+	// res.locals.href can be changed here, its basename will give the html
+	// file name
 	res.render('myview', {archive:true}, function(err, tarstream) {
 		res.set('Content-Type', 'application/x-tar');
 		res.set('Content-Disposition', 'attachment; filename="mytarball.tar"');

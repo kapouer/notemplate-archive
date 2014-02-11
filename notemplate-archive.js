@@ -26,8 +26,9 @@ module.exports = function(notemplate) {
 		}
 
 		var win = view.instance.window;
-		var basehref = win.location.href;
-		var root = opts.root || Path.basename(basehref, Path.extname(basehref));
+		var root = opts.root || Path.dirname(win.location.pathname);
+		if (root[0] == '/') root = root.substring(1);
+		var index = Path.basename(win.location.pathname);
 		var match = opts.match || /.*/;
 		var tarStream = tar.Pack({ noProprietary: true });
 
@@ -73,7 +74,7 @@ module.exports = function(notemplate) {
 		})();
 
 		function finish() {
-			tarStream.add(CreateEntry(view.instance.toString(), "index.html", root));
+			tarStream.add(CreateEntry(view.instance.toString(), index, root));
 			tarStream.end();
 			view.archiveCache = null;
 		}

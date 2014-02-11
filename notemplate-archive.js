@@ -37,7 +37,7 @@ module.exports = function(notemplate) {
 		if (xhr) {
 			for (var url in view.archiveCache) {
 				var link = win.document.createElement('link');
-				link.attr('href', url);
+				link.setAttribute('href', url);
 				items.push(link);
 			}
 		}

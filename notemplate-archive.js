@@ -30,7 +30,7 @@ module.exports = function(notemplate) {
 		if (root[0] == '/') root = root.substring(1);
 		var index = Path.basename(win.location.pathname);
 		var match = opts.match || /.*/;
-		var tarStream = tar.Pack({ noProprietary: true });
+		var tarStream = opts.archiveStream || tar.Pack({ noProprietary: true });
 
 		view.instance.output = tarStream;
 
@@ -74,7 +74,7 @@ module.exports = function(notemplate) {
 		})();
 
 		function finish() {
-			tarStream.add(CreateEntry(view.instance.toString(), index, root));
+			appendToStream(tarStream, view.instance.toString(), index, root);
 			tarStream.end();
 			view.archiveCache = null;
 		}
@@ -161,7 +161,7 @@ function archive(elem, match, mangler, root, tarStream, done) {
 				}
 			}
 			ensureData(val, mangler.request, function(err, obj) {
-				if (obj.path != null && obj.data != null) tarStream.add(CreateEntry(obj.data, obj.path, root));
+				if (obj.path != null && obj.data != null) appendToStream(tarStream, obj.data, obj.path, root);
 				if (--count == 0) finish(err);
 			});
 		}); else finish();
@@ -170,8 +170,11 @@ function archive(elem, match, mangler, root, tarStream, done) {
 	mangler(uri, mcb);
 }
 
-
-function CreateEntry(data, path, root) {
+function appendToStream(stream, data, path, root) {
+	if (typeof stream.add != "function") {
+		stream.write(data);
+		return;
+	}
 	if (typeof data == "string") {
 		// tar only understands buffer.length
 		data = new Buffer(data);
@@ -194,5 +197,5 @@ function CreateEntry(data, path, root) {
 	};
 	entry.path = Path.join(root, path);
 	entry.root = root;
-	return entry;
+	stream.add(entry);
 }

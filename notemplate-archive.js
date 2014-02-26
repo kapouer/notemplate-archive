@@ -170,9 +170,9 @@ function archive(elem, match, mangler, root, tarStream, done) {
 	mangler(uri, mcb);
 }
 
-function appendToStream(stream, data, path, root) {
-	if (typeof stream.add != "function") {
-		stream.write(data);
+function appendToStream(wStream, data, path, root) {
+	if (typeof wStream.add != "function") {
+		wStream.write(data);
 		return;
 	}
 	if (typeof data == "string") {
@@ -197,5 +197,5 @@ function appendToStream(stream, data, path, root) {
 	};
 	entry.path = Path.join(root, path);
 	entry.root = root;
-	stream.add(entry);
+	wStream.add(entry);
 }

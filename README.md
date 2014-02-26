@@ -67,3 +67,6 @@ Parameters
   RegExp, defaults to /.*/
 	Only matching url are processed, others are left untouched and not
 	included in the archive.
+* archiveStream
+  if specified, this writableStream will be used instead of the default
+  tar stream created by notemplate-archive.

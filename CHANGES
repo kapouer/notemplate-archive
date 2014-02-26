@@ -1,3 +1,8 @@
+Version 0.2.1
+=============
+
+* the default tar stream can be replaced by the archiveStream option
+
 Version 0.2.0
 =============
 

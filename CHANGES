@@ -1,3 +1,8 @@
+Version 0.2.3
+=============
+
+* fix tarring of a single html file (there was some race condition)
+
 Version 0.2.2
 =============
 

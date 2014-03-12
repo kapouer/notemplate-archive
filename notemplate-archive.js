@@ -74,8 +74,12 @@ module.exports = function(notemplate) {
 		})();
 
 		function finish() {
+			tarStream.pause();
 			appendToStream(tarStream, view.instance.toString(), index, root);
-			tarStream.end();
+			setImmediate(function() {
+				tarStream.resume();
+				tarStream.end();
+			});
 			view.archiveCache = null;
 		}
 	});

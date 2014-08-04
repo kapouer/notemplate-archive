@@ -1,3 +1,9 @@
+Version 0.3.0
+=============
+
+* depends on express-notemplate 0.3.0, use window.XMLHttpRequest to
+  make the downloads, benefiting from current environment (Cookie...)
+
 Version 0.2.3
 =============
 

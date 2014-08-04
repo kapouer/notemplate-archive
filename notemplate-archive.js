@@ -166,7 +166,7 @@ function archive(elem, match, mangler, root, tarStream, done) {
 			}
 			ensureData(val, mangler.request, function(err, obj) {
 				if (obj.path != null && obj.data != null) appendToStream(tarStream, obj.data, obj.path, root);
-				if (--count == 0) finish(err);
+				if (i == count - 1) finish(err);
 			});
 		}); else finish();
 	}

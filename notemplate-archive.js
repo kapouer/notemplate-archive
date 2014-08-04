@@ -37,6 +37,7 @@ module.exports = function(notemplate) {
 		var items = win.$(sel).toArray();
 		if (xhr) {
 			for (var url in view.archiveCache) {
+				// these elements are not added to the document
 				var link = win.document.createElement('link');
 				link.setAttribute('href', url);
 				items.push(link);

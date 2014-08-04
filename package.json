@@ -10,7 +10,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "express-notemplate": "~0.2.0"
+    "express-notemplate": "~0.3.0"
   , "tar": "~0.1.17"
   },
   "main": "./notemplate-archive.js"

@@ -3,7 +3,6 @@ var tar = require('tar');
 var mkdirp = require('mkdirp');
 var URL = require('url');
 var Path = require('path');
-var http = require('http');
 
 module.exports = function(notemplate) {
 	notemplate.on('ready', function(view, opts) {
@@ -54,10 +53,11 @@ module.exports = function(notemplate) {
 					cb(null, {uri:uri, data:cached.response});
 				}
 			}	else {
-				request(uri, function(err, data) {
+				request(uri, win, function cbReq(err, data) {
 					if (!err) {
 						view.archiveCache[uri] = {status: 200, response: data};
 					} else {
+						if (err) console.error(err);
 						var status = parseInt(err);
 						if (isNaN(status)) status = 404;
 						view.archiveCache[uri] = {status: status, response: data};
@@ -96,35 +96,22 @@ function getPathname(uri) {
 	return pathname;
 }
 
-function request(uri, cb) {
-	http.get(uri, function(res) {
-		if (res.statusCode < 200 || res.statusCode > 400) return cb(res.statusCode);
-		var chunks = [];
-    var bufLen = 0;
-    res.on('data', function(chunk) {
-			chunks.push(chunk);
-			bufLen += chunk.length;
-    });
-    res.on('end', function() {
-			var buf;
-			if (chunks.length) {
-				if (Buffer.isBuffer(chunks[0])) {
-					buf = new Buffer(bufLen);
-          var curLen = 0;
-          chunks.forEach(function(chunk) {
-            chunk.copy(buf, curLen, 0, chunk.length);
-            curLen += chunk.length;
-          });
-				} else {
-					buf = chunks.join('');
-				}
-			}
-			cb(null, buf);
-		});
-	}).on('error', function(err) {
-		console.error(err);
-		cb(err);
+function request(uri, win, cb) {
+	var xhr = new win.XMLHttpRequest();
+	xhr.addEventListener('readystatechange', function(e) {
+		if (this.readyState == this.DONE) {
+			if (this.status < 200 || this.status > 400) return cb(this.status);
+			cb(null, new Buffer(new Uint8Array(this.response)));
+		}
 	});
+	try {
+		xhr.open("GET", uri);
+		xhr.responseType = 'arraybuffer';
+		xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+		xhr.send();
+	} catch(e) {
+		cb(e);
+	}
 }
 
 function ensureData(obj, requester, cb) {
